@@ -1,0 +1,14 @@
+fastapi
+uvicorn
+pydantic
+python-dotenv
+tqdm
+langchain-core
+langchain-openai
+langchain-ollama
+langchain-chroma
+langgraph-prebuilt==1.0.4
+langchain-community
+langchain-classic
+langchain-core
+langchain_community
