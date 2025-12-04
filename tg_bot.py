@@ -2,6 +2,7 @@ import os
 import uuid
 import json
 import requests
+import telegram
 from telegram import Update, ReplyKeyboardMarkup
 from telegram.ext import Application, CommandHandler, MessageHandler, filters, ContextTypes
 
@@ -72,7 +73,7 @@ async def handle_message(update: Update, context: ContextTypes.DEFAULT_TYPE):
             API_URL,
             json=request_data,
             headers={'Content-Type': 'application/json'},
-            timeout=180
+            timeout=600
         )
         response.raise_for_status()
         
@@ -99,6 +100,7 @@ async def handle_message(update: Update, context: ContextTypes.DEFAULT_TYPE):
         # Send the response back to user
         await update.message.reply_text(
             response_text,
+            parse_mode='Markdown',
             #parse_mode=telegram.constants.ParseMode.MARKDOWN_V2,
             reply_markup=ReplyKeyboardMarkup([["/start", "/reset"]], resize_keyboard=True)
         )

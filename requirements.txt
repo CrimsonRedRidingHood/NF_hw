@@ -1,5 +1,6 @@
 fastapi
 uvicorn
+ddgs
 pydantic
 python-dotenv
 tqdm
@@ -7,8 +8,11 @@ langchain-core
 langchain-openai
 langchain-ollama
 langchain-chroma
+langgraph
 langgraph-prebuilt==1.0.4
 langchain-community
 langchain-classic
 langchain-core
 langchain_community
+requests
+python-telegram-bot

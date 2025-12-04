@@ -43,15 +43,18 @@ def dispatch_message(msg: str, session_id: uuid):
         по шагам - тексты каждого запроса в процессе рассуждения модели,
         а также информация по вызовам тулов - их аргументы и результаты.
     """
-    config: RunnableConfig = {"configurable": {"thread_id": session_storage[session_id]}}
-    return graph.invoke({
-        "messages": [
-            {
-                "role": "user",
-                "content": msg,
-            }
-        ]
-    }, config)['messages'][1:]
+    try:
+        config: RunnableConfig = {"configurable": {"thread_id": session_storage[session_id]}}
+        return graph.invoke({
+            "messages": [
+                {
+                    "role": "user",
+                    "content": msg,
+                }
+            ]
+        }, config)['messages'][1:]
+    except Exception as e:
+        print(f'Error in dispatch_message: {e}')
 
 def pack_answer_from_response(resp, session_id):
     """
@@ -126,7 +129,7 @@ COLLECTION_NAME = "nf_hw_collection"
 vector_db = load_vector_store(COLLECTION_NAME, embeddings)
 
 @tool(description="Возвращает ближайшие по смыслу вхождения текстов из базы")
-def retrieval_function(x, k = 9, filter: Optional[Dict[str, str]] = None, **kwargs):
+def retrieval_function(x, k = 5, filter: Optional[Dict[str, str]] = None, **kwargs):
     """
     Функция-ретривер.
 
@@ -139,7 +142,8 @@ def retrieval_function(x, k = 9, filter: Optional[Dict[str, str]] = None, **kwar
             k - количество top-k возвращаемых записей
     """
     global model_data
-    retval = vector_db.similarity_search(x, k, filter, **kwargs)[4:]
+    retval = vector_db.similarity_search(x, k, filter, **kwargs)
+    print(f'retrieval_function called and got {retval}')
     model_data.top_doc_metadata = [{"source": d.metadata['source'], "snippet": d.page_content[:30] + ('' if len(d.page_content) <= 30 else '...')} for d in retval]
     return retval
 
@@ -150,7 +154,7 @@ retriever_tool = create_retriever_tool(
 )
 
 USED_MODEL = "GPT-4o"
-USE_LOCAL_MODEL = False
+USE_LOCAL_MODEL = True
 llm = create_llm(USE_LOCAL_MODEL, USED_MODEL)
 
 model_data.set_parameters(llm, retriever_tool)

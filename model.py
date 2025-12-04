@@ -4,6 +4,9 @@ from langgraph.prebuilt import ToolNode, tools_condition
 from langgraph.checkpoint.memory import InMemorySaver
 from langchain_core.messages import HumanMessage
 from llms import *
+import logging
+
+logging.basicConfig(level=logging.DEBUG)
 
 class ModelData:
     _instance = None
@@ -49,12 +52,14 @@ def generate_query_or_respond(state: MessagesState):
         model_data.llm
         .bind_tools([model_data.retriever_tool]).invoke(state["messages"])  
     )
+    logging.debug(f"generate_query_or_respond returns {response}")
     return {"messages": [response]}
 
 GENERATE_PROMPT = (
     "Ты - ассистент для консультации по разным вопросам, в частности - касающихся компании Неофлекс. "
     "Используй приведённый ниже контекст, чтобы ответить на вопрос. Возможно, но не точно, ответ уже содержится в контексте. "
     "Если к ответу вообще никак не получается прийти, просто сообщи, что не знаешь ответа. "
+    "Не используй табличное форматирование и особые Markdown-стилизации, используй обычное текстовое представление, это важно."
     "Вопрос: {question} \n"
     "Контекст: {context}"
 )
@@ -79,7 +84,7 @@ def generate_answer(state: MessagesState):
     question = msg.content
     context = state["messages"][-1].content
     prompt = GENERATE_PROMPT.format(question=question, context=context)
-    print(f"generate_answer called with prompt={prompt}")
+    logging.debug(f"generate_answer called with prompt={prompt}")
     response = model_data.llm.invoke([{"role": "user", "content": prompt}])
     return {"messages": [response]}
 
