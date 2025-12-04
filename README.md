@@ -39,13 +39,17 @@
 ## Примеры работы системы:
 
 **Пример 1: свободный диалог**
+
 [![free-speech.png](https://i.postimg.cc/gx34CKRV/free-speech.png)](https://postimg.cc/gx34CKRV)
 
 **Пример 2: запрос "Какие решения на основе искусственного интеллекта создаёт Neoflex?"**
+
 [![ai-solutions.png](https://i.postimg.cc/DS159csd/ai-solutions.png)](https://postimg.cc/DS159csd)
 
 **Пример 3: запрос "Примеры внедрения решений компании Neoflex"**
+
 [![integrations.png](https://i.postimg.cc/QFcS2q5g/integrations.png)](https://postimg.cc/QFcS2q5g)
 
 **Пример 4: запрос "На какие задачи был направлен фокус компании в 2022 году?"**
+
 [![2022-focus.png](https://i.postimg.cc/5X8phmvz/2022-focus.png)](https://postimg.cc/5X8phmvz)
