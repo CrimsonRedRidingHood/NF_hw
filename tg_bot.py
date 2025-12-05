@@ -2,7 +2,6 @@ import os
 import uuid
 import json
 import requests
-import telegram
 from telegram import Update, ReplyKeyboardMarkup
 from telegram.ext import Application, CommandHandler, MessageHandler, filters, ContextTypes
 

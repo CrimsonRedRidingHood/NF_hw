@@ -3,37 +3,13 @@ from langgraph.graph import StateGraph, START, END
 from langgraph.prebuilt import ToolNode, tools_condition
 from langgraph.checkpoint.memory import InMemorySaver
 from langchain_core.messages import HumanMessage
-from llms import *
+from typing import Any
+from state import model_data
 import logging
 
 logging.basicConfig(level=logging.DEBUG)
 
-class ModelData:
-    _instance = None
-    _initialized = False
-    llm = None
-    top_doc_metadata = []
-    retriever_tool = None
-
-    def __new__(cls, *args, **kwargs):
-        if cls._instance is None:
-            cls._instance = super().__new__(cls)
-        return cls._instance
-    
-    def __init__(self):
-        if not self._initialized:
-            self._initialized = True
-
-    def set_parameters(self, llm, retriever_tool):
-        """
-        Установка параметров графа - используемая LLM
-        и тул для получения наиболее близких по смыслу
-        текстов из БД
-        """
-        self.llm = llm
-        self.retriever_tool = retriever_tool
-
-model_data = ModelData()
+retriever_tool_state = None
     
 def generate_query_or_respond(state: MessagesState):
     """
@@ -48,9 +24,10 @@ def generate_query_or_respond(state: MessagesState):
         Словарь "messages": List[Union[ToolResponse, AIResponse]] -
             результат обработки запроса
     """
+    logging.debug(f"generate_query_or_respond entered")
     response = (
         model_data.llm
-        .bind_tools([model_data.retriever_tool]).invoke(state["messages"])  
+        .bind_tools([retriever_tool_state]).invoke(state["messages"])  
     )
     logging.debug(f"generate_query_or_respond returns {response}")
     return {"messages": [response]}
@@ -88,7 +65,7 @@ def generate_answer(state: MessagesState):
     response = model_data.llm.invoke([{"role": "user", "content": prompt}])
     return {"messages": [response]}
 
-def create_graph():
+def create_graph(retriever_tool : Any):
     """
     Создание графа обработки запроса через LLM.
 
@@ -119,11 +96,13 @@ def create_graph():
     Выходные данные:
         Граф обработки запроса пользователя
     """
+    global retriever_tool_state
     workflow = StateGraph(MessagesState)
+    retriever_tool_state = retriever_tool
 
     # Define the nodes we will cycle between
     workflow.add_node(generate_query_or_respond)
-    workflow.add_node("retrieve", ToolNode([model_data.retriever_tool]))
+    workflow.add_node("retrieve", ToolNode([retriever_tool_state]))
     workflow.add_node(generate_answer)
 
     workflow.add_edge(START, "generate_query_or_respond")
@@ -143,5 +122,3 @@ def create_graph():
 
     checkpointer = InMemorySaver()
     return workflow.compile(checkpointer=checkpointer)
-
-# Run with: uvicorn [filename]:app --reload
